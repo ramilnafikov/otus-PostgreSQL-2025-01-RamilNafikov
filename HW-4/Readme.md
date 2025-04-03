@@ -61,3 +61,11 @@
   ```
   grant select on all tables in schema testnm to readonly;
   ```
+* Создаем пользователя testread с паролем test123
+  ```
+  create user testread with password 'test123';
+  ```
+* Даем роль readonly пользователю testread
+  ```
+  grant readonly to testread;
+  ```
