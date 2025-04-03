@@ -118,7 +118,7 @@
   
   ![image](https://github.com/user-attachments/assets/d714c971-3712-4e53-abb4-7d1cf5a2d11a)
 
-* Мы давали доступ роли readonly на запросы только к существующим на тот момент таблицам схемы testnm, поэтому к заново созданной таблице t1 доступа нет
+* Мы давали доступ роли readonly на запросы только к существующим на тот момент таблицам схемы testnm, поэтому к заново созданной таблице t1 доступа нет (подсмотрено в шпаргалке)
 * Снова зайдем в базу testdb под пользователем postgres и выполним следующий код для автоматического назначения прав на все вновь создаваемые таблицы
   ```
   \c testdb postgres
@@ -133,7 +133,7 @@
   ```
 * Снова не получилось
   ![image](https://github.com/user-attachments/assets/7d917e36-c8eb-4957-8c27-1138b667875f)
-* Команда ALTER default privileges предоставит доступ на запросы только к новым таблицам схемы testnm, поэтому снова зайдем в базу testdb под пользователем postgres и выполним команду
+* Команда ALTER default privileges предоставит доступ на запросы только к новым таблицам схемы testnm (подсмотрено в шпаргалке), поэтому снова зайдем в базу testdb под пользователем postgres и выполним команду
   ```
   grant select on all tables in schema testnm to readonly;
   ```
@@ -152,4 +152,23 @@
   ```
 * Код выполнился без ошибок, хотя мы права на создание таблиц и вставку в них роли readonly не давали
   ![image](https://github.com/user-attachments/assets/e85579fd-c5dc-490d-aa06-7cb358d29582)
+
+* Так как при создании таблицы t2 мы снова не указали схему, а search_path по умолчанию указывает на схему public, то таблица t2 создалась в схеме public базы testdb.
+  А так как право на все действия в этой схеме дается роли public (подсмотрено в шпаргалке) и роль public добавляется всем новым пользователям, то каждый пользователь может создавать объекты в схеме public базы данных 
+  testdb
+* Запретим роли public создавать объекты в схеме public базы testdb
+  ```
+  revoke create on schema public from public; 
+  ```
+* Отменим все привелегии в базе данных testdb для роли public
+  ```
+  revoke all on database testdb from public;
+  ```
+* Снова зайти в базу testdb под пользователем testread не получается
+  ![image](https://github.com/user-attachments/assets/4029e16e-68e1-4a03-8216-ed2e4ccefa09)
+* Под пользователем postgres следующие команды выполняются без проблем
+  ```
+  create table t3(c1 integer); insert into t2 values (2);
+  ```
+  ![image](https://github.com/user-attachments/assets/651ef726-ed53-4a0c-8ed6-b34216a46e0f)
 
