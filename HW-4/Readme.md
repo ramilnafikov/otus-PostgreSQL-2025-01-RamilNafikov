@@ -1,3 +1,4 @@
+
 # Логический уровень PostgreSQL
 * Запускаем WSL
 * Создаем новый кластер PostgreSQL 14
@@ -47,4 +48,16 @@
 * Создаем новую роль readonly
   ```
   create role readonly;
+  ```
+* Даем новой роли право на подключение к базе данных
+  ```
+  alter role readonly LOGIN;
+  ```
+* Даем новой роли право на использование схемы testnm
+  ```
+  grant usage on schema testnm to readonly;
+  ```
+* Даем новой роли право на select для всех таблиц схемы testnm
+  ```
+  grant select on all tables in schema testnm to readonly;
   ```
