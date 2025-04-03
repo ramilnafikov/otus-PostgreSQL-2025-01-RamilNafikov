@@ -115,5 +115,41 @@
   select * from testnm.t1;
   ```
 * Снова не получилось
-* 
+  
   ![image](https://github.com/user-attachments/assets/d714c971-3712-4e53-abb4-7d1cf5a2d11a)
+
+* Мы давали доступ роли readonly на запросы только к существующим на тот момент таблицам схемы testnm, поэтому к заново созданной таблице t1 доступа нет
+* Снова зайдем в базу testdb под пользователем postgres и выполним следующий код для автоматического назначения прав на все вновь создаваемые таблицы
+  ```
+  \c testdb postgres
+
+  ALTER default privileges in SCHEMA testnm grant SELECT on TABLES to readonly; 
+  ```
+* Вернемся в базу testdb под пользователем testread и выполним запрос к таблице t1 схемы testnm
+  ```
+  \c testdb testread
+
+  select * from testnm.t1;
+  ```
+* Снова не получилось
+  ![image](https://github.com/user-attachments/assets/7d917e36-c8eb-4957-8c27-1138b667875f)
+* Команда ALTER default privileges предоставит доступ на запросы только к новым таблицам схемы testnm, поэтому снова зайдем в базу testdb под пользователем postgres и выполним команду
+  ```
+  grant select on all tables in schema testnm to readonly;
+  ```
+* Перезайдем в базу testdb под пользователем testread и снова выполним запрос к таблице t1 схемы testnm. Запрос выполнился без ошибок
+  ```
+  \c testdb testread
+
+  select * from testnm.t1;
+  ```
+  ![image](https://github.com/user-attachments/assets/8fdec72f-301c-4e97-b61d-d209d85b88ef)
+
+* Теперь попробуем создать таблицу t2 со столбцом c1 типа integer и вставить туда запись со значением 2.
+  ```
+  create table t2(c1 integer);
+  insert into t2 values (2);
+  ```
+* Код выполнился без ошибок, хотя мы права на создание таблиц и вставку в них роли readonly не давали
+  ![image](https://github.com/user-attachments/assets/e85579fd-c5dc-490d-aa06-7cb358d29582)
+
