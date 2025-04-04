@@ -132,7 +132,9 @@
   select * from testnm.t1;
   ```
 * Снова не получилось
+  
   ![image](https://github.com/user-attachments/assets/7d917e36-c8eb-4957-8c27-1138b667875f)
+  
 * Команда ALTER default privileges предоставит доступ на запросы только к новым таблицам схемы testnm (подсмотрено в шпаргалке), поэтому снова зайдем в базу testdb под пользователем postgres и выполним команду
   ```
   grant select on all tables in schema testnm to readonly;
@@ -151,6 +153,7 @@
   insert into t2 values (2);
   ```
 * Код выполнился без ошибок, хотя мы права на создание таблиц и вставку в них роли readonly не давали
+  
   ![image](https://github.com/user-attachments/assets/e85579fd-c5dc-490d-aa06-7cb358d29582)
 
 * Так как при создании таблицы t2 мы снова не указали схему, а search_path по умолчанию указывает на схему public, то таблица t2 создалась в схеме public базы testdb.
@@ -165,7 +168,9 @@
   revoke all on database testdb from public;
   ```
 * Снова зайти в базу testdb под пользователем testread не получается
+  
   ![image](https://github.com/user-attachments/assets/4029e16e-68e1-4a03-8216-ed2e4ccefa09)
+  
 * Под пользователем postgres следующие команды выполняются без проблем
   ```
   create table t3(c1 integer); insert into t2 values (2);
