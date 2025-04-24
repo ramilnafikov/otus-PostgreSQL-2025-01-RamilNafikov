@@ -1,5 +1,5 @@
 # Хранимые функции и процедуры часть 3 (Триггеры)
-* Удаляем схему pract_functions, если она существует. и создаем ее заново
+* Удаляем схему pract_functions, если она существует, и создаем ее заново
   ```
   DROP SCHEMA IF EXISTS pract_functions CASCADE;
   CREATE SCHEMA pract_functions;
@@ -38,6 +38,8 @@
   INSERT INTO sales (good_id, sales_qty)
   VALUES (1, 10), (1, 1), (1, 120), (2, 1);
   ```
+  ![image](https://github.com/user-attachments/assets/74219071-85a4-464c-a734-1fe1efc48d1b)
+  
 * Пишем запрос для генерации отчета – сумма продаж по каждому товару
   ```
   SELECT G.good_name, sum(G.good_price * S.sales_qty)
@@ -101,13 +103,15 @@
     AFTER INSERT OR UPDATE OR DELETE ON sales
     FOR EACH ROW EXECUTE PROCEDURE tf_for_sales();
     ```
-  * Удаляем все записи в таблице продаж и добавляем заново
+  * Удаляем все записи в таблице продаж, сбрасываем текущее значение последовательности до 1 и добавляем заново несколько записей
     ```
     truncate table sales;
 
+    ALTER SEQUENCE sales_sales_id_seq RESTART WITH 1;
+
     INSERT INTO sales (good_id, sales_qty)
     VALUES (1, 10), (1, 1), (1, 120), (2, 1);
-    ```
+    ``` 
   * Выполняем запрос к таблице good_sum_mart
     ```
     select * from good_sum_mart;
@@ -127,8 +131,16 @@
     ```
     update sales set sales_qty = 100 where sales_id = 3
     ```
-
     Результат:
 
-    
+    ![image](https://github.com/user-attachments/assets/fc0b4136-eb87-4e6e-bf28-0577d7380766)
 
+    ```
+    delete from sales where sales_id = 3;
+    ```
+    Результат:
+
+    ![image](https://github.com/user-attachments/assets/b6a80762-61c2-463c-ab9b-5411998c460b)
+
+
+    
