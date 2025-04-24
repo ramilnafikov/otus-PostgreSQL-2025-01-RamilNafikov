@@ -95,9 +95,40 @@
     $TRIG_FUNC$
     LANGUAGE plpgsql
     ```
-* Создаем триггер для таблицы продаж sales, который при вставке, редактировании или удалении записей будет вызывать нашу триггерную функцию tf_for_sales
-  ```
-  CREATE TRIGGER tr_sales
-  AFTER INSERT OR UPDATE OR DELETE ON sales
-  FOR EACH ROW EXECUTE PROCEDURE tf_for_sales();
-  ```
+  * Создаем триггер для таблицы продаж sales, который при вставке, редактировании или удалении записей будет вызывать нашу триггерную функцию tf_for_sales
+    ```
+    CREATE TRIGGER tr_sales
+    AFTER INSERT OR UPDATE OR DELETE ON sales
+    FOR EACH ROW EXECUTE PROCEDURE tf_for_sales();
+    ```
+  * Удаляем все записи в таблице продаж и добавляем заново
+    ```
+    truncate table sales;
+
+    INSERT INTO sales (good_id, sales_qty)
+    VALUES (1, 10), (1, 1), (1, 120), (2, 1);
+    ```
+  * Выполняем запрос к таблице good_sum_mart
+    ```
+    select * from good_sum_mart;
+    ```
+    ![image](https://github.com/user-attachments/assets/c8a6d270-16e2-4b73-bc6d-5763e5caa751)
+
+    Как видим, триггер сработал и в поле "Сумма продаж" сидит значение, аналогичное результату первоначального запроса для отчета
+  * Теперь добавим, отредактируем или удалим какую-нибудь запись в таблице продаж
+    ```
+    INSERT INTO sales (good_id, sales_qty)
+    values (1, 10);
+    ```
+    Результат:
+    
+    ![image](https://github.com/user-attachments/assets/4d8ec142-b66a-4b1b-a806-f14cab900f8a)
+
+    ```
+    update sales set sales_qty = 100 where sales_id = 3
+    ```
+
+    Результат:
+
+    
+
