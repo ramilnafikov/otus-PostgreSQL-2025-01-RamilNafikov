@@ -76,7 +76,7 @@
       IF (TG_OP = 'DELETE') THEN
         v_delta_sum = -1 * (OLD.sales_qty * v_good_price);
       ELSIF (TG_OP = 'UPDATE') THEN
-        v_delta_sum = (NEW.sales_qty * v_good_price) - (OLD.sales_qty * v_good_price);
+        v_delta_sum = (NEW.sales_qty - OLD.sales_qty) * v_good_price;
       ELSIF (TG_OP = 'INSERT') THEN
         v_delta_sum = NEW.sales_qty * v_good_price;
       END IF;
