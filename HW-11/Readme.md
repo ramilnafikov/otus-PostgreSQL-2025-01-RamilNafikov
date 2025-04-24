@@ -8,7 +8,7 @@
   ```
   SET search_path = pract_functions, public
   ```
-* Создаем таблицу с товарами
+* Создаем таблицу с товарами с полями "Наименование товара" (good_name) и "Стоимость" (good_price)
   ```
   CREATE TABLE goods
   (
@@ -23,7 +23,7 @@
   VALUES 	(1, 'Спички хозяйственные', 0.50),
 		      (2, 'Автомобиль Ferrari FXX K', 185000000);
   ```
-* Создаем таблицу "Продажи"
+* Создаем таблицу "Продажи" с полями "ИД товара" со ссылкой на таблицу "Товары" (good_id), "Время продажи" (sales_time) и "Количество" (sales_qty)
   ```
   CREATE TABLE sales
   (
@@ -45,6 +45,8 @@
   INNER JOIN sales S ON S.good_id = G.goods_id
   GROUP BY G.good_name
   ```
+  ![image](https://github.com/user-attachments/assets/f1f9b5d2-96cd-4f7f-86e3-97358a5c47fc)
+
 * Так как с увеличением объем продаж, запрос может выполняться медленно, принято решение денормализовать базу данных.
   * Создаем таблицу, в которой будут храниться наименование товара и сумма продаж
     ```
@@ -54,3 +56,48 @@
       sum_sale	numeric(16,2) NOT NULL
     );
     ```
+  * Создаем триггерную функцию tf_for_sales, которая будет вызываться при добавлении, изменении и удалении записей в таблице продаж sales
+    ```
+    CREATE OR REPLACE FUNCTION tf_for_sales()
+    RETURNS trigger
+    AS
+    $TRIG_FUNC$
+    declare
+      v_good_name varchar(63);
+      v_good_price numeric(12,2);
+      v_delta_sum numeric(16,2);
+    BEGIN
+      --Получаем наименование товара и его стоимость для id товара, по которому добавляются, редактируются или удаляются данные по продажам в таблице sales
+      SELECT g.good_name, g.good_price INTO v_good_name, v_good_price FROM goods as g WHERE g.goods_id = coalesce(NEW.good_id, OLD.good_id);
+
+      --Вычисляем изменение суммы продаж проданного товара
+      IF (TG_OP = 'DELETE') THEN
+        v_delta_sum = -1 * (OLD.sales_qty * v_good_price);
+      ELSIF (TG_OP = 'UPDATE') THEN
+        v_delta_sum = (NEW.sales_qty * v_good_price) - (OLD.sales_qty * v_good_price);
+      ELSIF (TG_OP = 'INSERT') THEN
+        v_delta_sum = NEW.sales_qty * v_good_price;
+      END IF;
+
+      --Если нет записей по продажам указаного товара, то мы добавляем запись в таблице для отчета good_sum_mart, иначе корректируем сумму продаж с учетом изменения количества проданных товаров
+      if not exists (select 1 from good_sum_mart where good_name = v_good_name) then
+       insert into good_sum_mart (good_name, sum_sale)
+        values (v_good_name, v_delta_sum);
+      else
+        update good_sum_mart
+        set
+          sum_sale = sum_sale + v_delta_sum
+        where good_name = v_good_name;
+      end if;
+
+      RETURN NULL;
+    END;
+    $TRIG_FUNC$
+    LANGUAGE plpgsql
+    ```
+* Создаем триггер для таблицы продаж sales, который при вставке, редактировании или удалении записей будет вызывать нашу триггерную функцию tf_for_sales
+  ```
+  CREATE TRIGGER tr_sales
+  AFTER INSERT OR UPDATE OR DELETE ON sales
+  FOR EACH ROW EXECUTE PROCEDURE tf_for_sales();
+  ```
